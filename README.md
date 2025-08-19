@@ -55,7 +55,7 @@ sequenceDiagram
     TrainingServer->>TrainingServer: Train RandomForest model
     TrainingServer->>TrainingServer: Convert to ONNX format
     TrainingServer->>MLflow: Log model & metrics
-    MLflow->>PostgreSQL: Store metadata
+    MLflow->>PostgreSQL: Store metadata and experiment details
     MLflow->>MinIO: Store model artifacts
     MLflow-->>TrainingServer: Return run_id
     TrainingServer-->>Client: Return success + run_id
@@ -107,6 +107,8 @@ docker compose up -d
 Wait for services to be ready:
 - MLflow UI: http://localhost:5001
 - MinIO Console: http://localhost:9001 (minio/minio123)
+
+__Please create a bucket called `mlflow` in MinIO before proceeding:__
 
 ### 2. Install Dependencies
 

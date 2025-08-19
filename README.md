@@ -161,17 +161,84 @@ timestamp,feature1,feature2,...,target
 
 ## 🔧 API Usage
 
-### Training Endpoint
+### Training Endpoints
 
-Train a new model with your dataset:
-
+**Train a new model:**
 ```bash
 curl -X POST \
   -F "file=@sample_data/time_series_weather.csv" \
   http://localhost:8001/train
 ```
 
-**Response:**
+**List all experiments:**
+```bash
+curl http://localhost:8001/experiments
+```
+
+**List all registered models:**
+```bash
+curl http://localhost:8001/models
+```
+
+**Get model details:**
+```bash
+curl http://localhost:8001/models/<model_name>
+```
+
+**Get runs for an experiment:**
+```bash
+curl http://localhost:8001/experiments/<experiement_id>/runs
+```
+
+**Get MLflow statistics:**
+```bash
+curl http://localhost:8001/stats
+```
+
+### Inference Endpoints
+
+**Generate predictions:**
+```bash
+curl -X POST \
+  -F "file=@sample_data/time_series_weather.csv" \
+  "http://localhost:8002/predict?model_name=<model_name>&version=1"
+```
+
+**List available models for inference:**
+```bash
+curl http://localhost:8002/available-models
+```
+
+**Get model versions:**
+```bash
+curl http://localhost:8002/models/<model_name>/versions
+```
+
+**Get latest model version:**
+```bash
+curl http://localhost:8002/models/<model_name>/latest
+```
+
+**Get model input schema:**
+```bash
+curl http://localhost:8002/models/<model_name>/predict-schema
+```
+
+**Predictions:**
+```bash
+curl -X POST \
+  -F "files=@sample_data/time_series_weather.csv" \
+  "http://localhost:8002/batch-predict?model_name=<model_name>"
+```
+
+**Get inference statistics:**
+```bash
+curl http://localhost:8002/inference-stats
+```
+
+## 📊 API Response Examples
+
+### Training Response:
 ```json
 {
   "status": "success",
@@ -179,21 +246,88 @@ curl -X POST \
 }
 ```
 
-### Inference Endpoint
-
-Generate predictions using a trained model:
-
-```bash
-curl -X POST \
-  -F "file=@sample_data/time_series_weather.csv" \
-  "http://localhost:8002/predict?model_name=rf_regressor&version=1"
+### Models List Response:
+```json
+{
+  "models": [
+    {
+      "name": "rf_regressor",
+      "creation_timestamp": 1692460800000,
+      "latest_versions": [
+        {
+          "version": "1",
+          "stage": "None",
+          "status": "READY"
+        }
+      ]
+    }
+  ],
+  "count": 1
+}
 ```
 
-**Response:**
+### Prediction Response:
 ```json
 {
   "predictions": [42.3, 45.1, 44.7, ...]
 }
+```
+
+## 🔌 Complete API Reference
+
+### Training Server (Port 8001)
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/train` | POST | Train a new model with CSV data |
+| `/experiments` | GET | List all MLflow experiments |
+| `/experiments/{id}/runs` | GET | Get runs for specific experiment |
+| `/models` | GET | List all registered models |
+| `/models/{name}` | GET | Get detailed model information |
+| `/models/{name}/versions/{version}` | GET | Get specific model version details |
+| `/runs/{run_id}` | GET | Get detailed run information |
+| `/metrics` | GET | Get metrics summary across runs |
+| `/search/runs` | GET | Search runs with advanced filters |
+| `/stats` | GET | Get MLflow statistics |
+| `/health` | GET | Health check |
+
+### Inference Server (Port 8002)
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/predict` | POST | Generate predictions for single file |
+| `/batch-predict` | POST | Generate predictions for multiple files |
+| `/available-models` | GET | List models available for inference |
+| `/models/{name}/versions` | GET | Get all versions for a model |
+| `/models/{name}/latest` | GET | Get latest working model version |
+| `/models/{name}/predict-schema` | GET | Get model input schema/features |
+| `/inference-stats` | GET | Get inference server statistics |
+| `/health` | GET | Health check |
+
+### Query Parameters
+
+**Training Server:**
+- `experiment_ids` - Comma-separated experiment IDs
+- `filter_string` - MLflow filter expression (e.g., `metrics.r2_score > 0.8`)
+- `max_results` - Maximum number of results (default: 100)
+- `order_by` - Sort order for results
+- `metric_name` - Filter metrics by name
+
+**Inference Server:**
+- `model_name` - Model name for predictions
+- `version` - Model version (uses latest if not specified)
+
+### Example Filter Strings
+
+```bash
+# Get runs with high accuracy
+curl "http://localhost:8001/search/runs?filter_string=metrics.r2_score > 0.9"
+
+# Get runs from specific experiment with parameters
+curl "http://localhost:8001/search/runs?experiment_ids=0&filter_string=params.n_estimators = '100'"
+
+# Get recent runs ordered by start time
+curl "http://localhost:8001/search/runs?order_by=start_time DESC&max_results=10"
 ```
 
 ## 🗂️ Project Structure

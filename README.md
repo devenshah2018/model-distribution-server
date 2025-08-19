@@ -8,7 +8,6 @@ A comprehensive MLOps platform for training, managing, and serving machine learn
 graph TB
     subgraph "Client Layer"
         CLI[CLI/cURL Requests]
-        UI[Web Interface]
     end
     
     subgraph "Application Layer"
@@ -27,8 +26,6 @@ graph TB
     
     CLI --> TS
     CLI --> IS
-    UI --> TS
-    UI --> IS
     
     TS --> MLF
     IS --> MLF
@@ -212,59 +209,23 @@ Models are automatically registered in MLflow with:
 - **Metrics**: R² score
 - **Versioning**: Automatic increment
 
-Upon training, models are saved to the `mlruns` folder via MLflow. The structure is as follows:
-
-```plaintext
-mlruns/
-├── <experiment_id>/                     # Experiment directory (0 for default)
-│   ├── meta.yaml                        # Experiment metadata
-│   ├── <run_id>/                        # Individual run directory (UUID)
-│   │   ├── meta.yaml                    # Run metadata & configuration
-│   │   ├── metrics/                     # Training metrics directory
-│   │   │   ├── <metric_name>           # Individual metric files
-│   │   │   └── <metric_name>           # (accuracy, loss, etc.)
-│   │   ├── params/                      # Hyperparameters directory
-│   │   │   ├── <param_name>            # Individual parameter files
-│   │   │   └── <param_name>            # (learning_rate, batch_size, etc.)
-│   │   ├── tags/                        # Run tags & metadata
-│   │   │   ├── mlflow.user             # User information
-│   │   │   ├── mlflow.source.name      # Source application
-│   │   │   ├── mlflow.source.type      # Source type (LOCAL, GIT, etc.)
-│   │   │   └── <custom_tag>            # Custom tags
-│   │   ├── artifacts/                   # Run artifacts directory
-│   │   │   ├── <artifact_name>         # Model files, plots, data
-│   │   │   └── <directory>/            # Artifact subdirectories
-│   │   └── outputs/                     # Model outputs & links
-│   │       └── <model_id>/             # Model output references
-│   ├── models/                          # Experiment-level models
-│   │   └── <model_id>/                 # Individual model directory
-│   │       ├── MLmodel                 # Model metadata & flavors
-│   │       ├── artifacts/              # Model artifact files
-│   │       │   ├── model.<ext>         # Serialized model (.pkl, .onnx, etc.)
-│   │       │   ├── conda.yaml          # Conda environment
-│   │       │   ├── python_env.yaml     # Python environment
-│   │       │   └── requirements.txt    # Python dependencies
-│   │       └── meta.yaml              # Model metadata
-│   └── <another_run_id>/              # Additional runs...
-├── models/                             # Model registry (global)
-│   └── <model_name>/                   # Registered model name
-│       ├── meta.yaml                   # Model registry metadata
-│       ├── version-<version_number>/   # Model version directory
-│       │   ├── meta.yaml              # Version metadata & links
-│       │   └── <stage_name>           # Stage-specific metadata
-│       └── version-<version_number>/   # Additional versions...
-├── <another_experiment_id>/           # Additional experiments...
-├── .trash/                            # Deleted experiments
-│   └── <deleted_experiment_id>/       # Soft-deleted experiment data
-└── mlflow.db                          # SQLite database (if using local backend)
-```
-
 Access the MLflow UI at http://localhost:5001 to:
 - Browse trained models
 - Compare model performance
 - Manage model versions
 - View training metrics
 
+## 📦 Minio S3 Artifact Store
+Models and artifacts are stored in MinIO, an S3-compatible object storage service. The default bucket is `mlflow`.
+
+The structure is as follows:
+
+```
+models/
+├── models/
+│   ├── <model_id>/
+│   │   ├── artifacts/
+    
 ## 🐳 Docker Services
 
 | Service | Port | Purpose |

@@ -1,0 +1,6 @@
+fastapi
+pandas
+skl2onnx
+mlflow
+python-multipart
+onnxruntime

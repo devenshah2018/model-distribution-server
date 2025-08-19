@@ -127,6 +127,23 @@ uvicorn mds_train_server.app:app --reload --port 8001
 uvicorn mds_inference_server.app:app --reload --port 8002
 ```
 
+### ALTERNATIVE QUICK START
+Upon first clone, run:
+```bash
+chmod +x start.sh
+chmod +x end.sh
+```
+
+Then start all services with:
+```bash
+./start.sh
+```
+
+To end all services, run:
+```bash
+./end.sh
+```
+
 ## 📊 Data Format
 
 The system expects CSV files with the following structure:
@@ -225,7 +242,7 @@ models/
 ├── models/
 │   ├── <model_id>/
 │   │   ├── artifacts/
-    
+
 ## 🐳 Docker Services
 
 | Service | Port | Purpose |

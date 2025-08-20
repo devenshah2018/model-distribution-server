@@ -120,3 +120,6 @@ echo -e "${YELLOW}curl -X POST -F \"file=@sample_data/time_series_weather.csv\" 
 
 echo -e "${BLUE}💡 View logs with:${NC}"
 echo -e "${YELLOW}docker compose logs -f${NC}"
+
+open "http://localhost:5001"
+open "http://localhost:9001"

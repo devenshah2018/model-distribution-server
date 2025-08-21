@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, HTTPException, Query
+from fastapi import FastAPI, UploadFile, HTTPException, Query, Form
 import pandas as pd
 from .trainer import train_models
 import traceback
@@ -18,11 +18,11 @@ os.environ['MLFLOW_S3_ENDPOINT_URL'] = 'http://localhost:9000'
 app = FastAPI(title="Model Training Server", description="MLflow-powered model training and management API")
 
 @app.post("/train")
-async def train(file: UploadFile):
+async def train(file: UploadFile, model_name: str = Form('rf')):
     try:
         from .trainer import train_models        
         df = pd.read_csv(file.file)
-        run_ids = train_models(df)
+        run_ids = train_models(df, model_name=model_name)
         return {"status": "success", "trained_models": run_ids}
         
     except Exception as e:

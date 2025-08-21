@@ -105,6 +105,7 @@ sleep 1
 start_server "uvicorn mds_train_server.app:app --reload --port 8001" "Training Server" "8001"
 sleep 2
 start_server "uvicorn mds_inference_server.app:app --reload --port 8002" "Inference Server" "8002"
+start_server "ollama serve" "Ollama Service" "11434"
 
 # Final status
 echo -e "${GREEN}🎉 Model Distribution Server is starting up!${NC}"

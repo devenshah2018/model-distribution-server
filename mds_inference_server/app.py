@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, HTTPException, Query
+from fastapi import FastAPI, UploadFile, HTTPException, Query, File
 import pandas as pd
 from .loader import load_model
 from .predictor import predict
@@ -6,6 +6,9 @@ import mlflow
 from mlflow import MlflowClient
 from typing import List, Dict, Optional, Any
 import os
+import httpx
+import requests
+import json
 
 # Configure MLflow
 mlflow.set_tracking_uri("http://localhost:5001")
@@ -29,6 +32,48 @@ async def health():
     return {"status": "healthy", "mlflow_uri": mlflow.get_tracking_uri()}
 
 # Model Registry Query Endpoints
+
+@app.post("/summarize", summary="Query Llama2")
+async def summarize(
+    model_name: str,
+    experiment_id: int,
+    data_context: UploadFile = File(...)
+):
+    try:
+        df = pd.read_csv(data_context.file)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid CSV file: {str(e)}")
+    model_context = load_model(model_name)
+    response = requests.get(f"http://localhost:8001/experiments/{experiment_id}/runs")
+    if response.status_code != 200:
+        raise HTTPException(status_code=500, detail="Failed to fetch data context")
+    performance = response.json().get("runs", "")
+    data_overview = {
+        "num_rows": len(df),
+        "num_columns": len(df.columns),
+        "columns": df.columns.tolist(),
+        "sample_data": df.head().to_dict(orient="records")
+    }
+    system_prompt = f"""
+    You are a helpful assistant that can answer questions based on the provided context.
+    Model Context: {model_context}
+    Data Context: {data_overview}
+    Performance Metrics: {performance}
+    Please summarize the key insights from the data and model context."""
+    llama2_response = requests.post("http://localhost:11434/api/generate", json={
+        "model": "llama2",
+        "prompt": system_prompt},
+        stream=True
+    )
+    output_response = ""
+    for chunk in llama2_response.iter_lines():
+        if chunk:
+            try:
+                data_json = json.loads(chunk.decode('utf-8'))
+                output_response += data_json.get("response", "")
+            except Exception as e:
+                continue
+    return {"response": str(output_response)}
 
 @app.get("/available-models", summary="List available models for inference")
 async def list_available_models():

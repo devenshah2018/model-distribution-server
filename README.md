@@ -91,6 +91,7 @@ sequenceDiagram
 - Docker & Docker Compose
 - Python 3.9+
 - pip
+- ollama
 
 ## 🛠️ Setup & Installation
 
@@ -115,6 +116,9 @@ pip install -r mds_train_server/requirements.txt
 
 # Inference server dependencies  
 pip install -r mds_inference_server/requirements.txt
+
+# Install Ollama for model serving
+ollama pull llama2
 ```
 
 ### 3. Start Application Servers
@@ -125,6 +129,9 @@ uvicorn mds_train_server.app:app --reload --port 8001
 
 # Terminal 2: Inference Server
 uvicorn mds_inference_server.app:app --reload --port 8002
+
+# Start Llama2 model server
+ollama serve
 ```
 
 ### ALTERNATIVE QUICK START
@@ -166,7 +173,7 @@ timestamp,feature1,feature2,...,target
 **Train a new model:**
 ```bash
 curl -X POST \
-  -F "file=@sample_data/<time_series_dataset>.csv" \
+  -F "file=@sample_data/<dataset>.csv" \
   -F "model_name=<model_type>" \
   http://localhost:8001/train
 ```
@@ -228,6 +235,13 @@ curl http://localhost:8002/models/<model_name>/latest
 **Get model input schema:**
 ```bash
 curl http://localhost:8002/models/<model_name>/predict-schema
+```
+
+**Summarize experiement with Llama2:**
+```bash
+curl -X POST \
+  -F "data_context=@sample_data/<dataset>.csv" \
+  "http://localhost:8002/summarize?model_name=<model_name>&experiment_id=<experiment_id>"
 ```
 
 **Predictions:**

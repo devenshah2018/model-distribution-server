@@ -311,31 +311,17 @@ curl http://localhost:8002/inference-stats
 | `/inference-stats` | GET | Get inference server statistics |
 | `/health` | GET | Health check |
 
-### Query Parameters
+## 📋 Model Registry
 
-**Training Server:**
-- `experiment_ids` - Comma-separated experiment IDs
-- `filter_string` - MLflow filter expression (e.g., `metrics.r2_score > 0.8`)
-- `max_results` - Maximum number of results (default: 100)
-- `order_by` - Sort order for results
-- `metric_name` - Filter metrics by name
+Below is an example of how models are registered in MLflow. Only the model name and available metrics are shown:
 
-**Inference Server:**
-- `model_name` - Model name for predictions
-- `version` - Model version (uses latest if not specified)
+| Model Name     | Metrics Available                                                                                           |
+|----------------|------------------------------------------------------------------------------------------------------------|
+| rf_regressor   | r2_score, mae, mse, rmse, explained_variance, median_absolute_error, max_error, mean_squared_log_error, mean_poisson_deviance, mean_gamma_deviance, mean_tweedie_deviance, mean_absolute_percentage_error, mean_pinball_loss |
+| svm_regressor  | r2_score, mae, mse, rmse, explained_variance, median_absolute_error, max_error, mean_squared_log_error, mean_poisson_deviance, mean_gamma_deviance, mean_tweedie_deviance, mean_absolute_percentage_error, mean_pinball_loss |
+| rf_classifier  | accuracy, f1_score, precision, recall                                                                      |
 
-### Example Filter Strings
-
-```bash
-# Get runs with high accuracy
-curl "http://localhost:8001/search/runs?filter_string=metrics.r2_score > 0.9"
-
-# Get runs from specific experiment with parameters
-curl "http://localhost:8001/search/runs?experiment_ids=0&filter_string=params.n_estimators = '100'"
-
-# Get recent runs ordered by start time
-curl "http://localhost:8001/search/runs?order_by=start_time DESC&max_results=10"
-```
+To view the actual metric values for each model and run, navigate to the corresponding experiment in the MLflow UI: [http://localhost:5001](http://localhost:5001)
 
 ## 🗂️ Project Structure
 
@@ -362,7 +348,7 @@ model-distribution-server/
 
 Models are automatically registered in MLflow with:
 
-- **Model Name**: `rf_regressor`
+- **Model Name**: I.e. `rf_regressor`
 - **Formats**: Scikit-learn + ONNX
 - **Metrics**: R² score
 - **Versioning**: Automatic increment

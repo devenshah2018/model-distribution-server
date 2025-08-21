@@ -116,7 +116,7 @@ echo -e "${GREEN}🔮 Inference API:  http://localhost:8002${NC}"
 echo -e "${GREEN}═══════════════════════════════════════${NC}"
 
 echo -e "${BLUE}💡 Test training with:${NC}"
-echo -e "${YELLOW}curl -X POST -F \"file=@sample_data/time_series_weather.csv\" http://localhost:8001/train${NC}"
+echo -e "${YELLOW}curl -X POST -F \"file=@sample_data/time_series_weather.csv\" -F \"model_name=rfr\" http://localhost:8001/train${NC}"
 
 echo -e "${BLUE}💡 View logs with:${NC}"
 echo -e "${YELLOW}docker compose logs -f${NC}"

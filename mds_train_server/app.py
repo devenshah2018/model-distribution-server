@@ -19,7 +19,7 @@ os.environ['MLFLOW_S3_ENDPOINT_URL'] = 'http://localhost:9000'
 app = FastAPI(title="Model Training Server", description="MLflow-powered model training and management API")
 
 @app.post("/train")
-async def train(file: UploadFile, model_name: str = Form('rf')):
+async def train(file: UploadFile, model_name: str = Form('rfr')):
     try:
         from .trainer import train_models        
         df = pd.read_csv(file.file)

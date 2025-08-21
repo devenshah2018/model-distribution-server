@@ -166,8 +166,14 @@ timestamp,feature1,feature2,...,target
 **Train a new model:**
 ```bash
 curl -X POST \
-  -F "file=@sample_data/time_series_weather.csv" \
+  -F "file=@sample_data/<time_series_dataset>.csv" \
+  -F "model_name=<model_type>" \
   http://localhost:8001/train
+```
+
+**Purge all MLflow experiments, models, and MinIO bucket contents:**
+```bash
+curl -X POST http://localhost:8001/purge
 ```
 
 **List all experiments:**
@@ -280,6 +286,7 @@ curl http://localhost:8002/inference-stats
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/train` | POST | Train a new model with CSV data |
+| `/purge` | POST | Delete all MLflow experiments, models, and MinIO bucket contents |
 | `/experiments` | GET | List all MLflow experiments |
 | `/experiments/{id}/runs` | GET | Get runs for specific experiment |
 | `/models` | GET | List all registered models |

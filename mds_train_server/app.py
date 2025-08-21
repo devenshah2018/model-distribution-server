@@ -6,6 +6,7 @@ import mlflow
 from mlflow import MlflowClient
 from typing import List, Dict, Optional, Any
 import os
+import boto3
 
 # Configure MLflow
 mlflow.set_tracking_uri("http://localhost:5001")
@@ -364,4 +365,43 @@ async def get_mlflow_stats():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get MLflow stats: {str(e)}")
 
-# Training endpoint (existing)
+@app.post("/purge", summary="Delete all MLflow experiments, models, and MinIO bucket contents")
+async def purge():
+    try:
+        client = MlflowClient()
+
+        # Delete all experiments
+        experiments = client.search_experiments()
+        for exp in experiments:
+            try:
+                client.delete_experiment(exp.experiment_id)
+            except Exception as e:
+                pass  # Ignore errors for already deleted experiments
+
+        # Delete all registered models
+        models = client.search_registered_models()
+        for model in models:
+            try:
+                client.delete_registered_model(model.name)
+            except Exception as e:
+                pass  # Ignore errors for already deleted models
+
+        # Clear all objects in the MLflow bucket on MinIO
+        s3_endpoint = os.environ.get('MLFLOW_S3_ENDPOINT_URL', 'http://localhost:9000')
+        aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID', 'minio')
+        aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY', 'minio123')
+        bucket_name = 'mlflow'  # Default MLflow bucket name
+
+        s3 = boto3.resource(
+            's3',
+            endpoint_url=s3_endpoint,
+            aws_access_key_id=aws_access_key,
+            aws_secret_access_key=aws_secret_key,
+        )
+
+        bucket = s3.Bucket(bucket_name)
+        bucket.objects.all().delete()
+
+        return {"status": "success", "message": "All MLflow experiments, models, and MinIO bucket contents deleted."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to clear MLflow and MinIO: {str(e)}")

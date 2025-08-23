@@ -55,11 +55,41 @@ async def summarize(
         "sample_data": df.head().to_dict(orient="records")
     }
     system_prompt = f"""
-    You are a helpful assistant that can answer questions based on the provided context.
-    Model Context: {model_context}
-    Data Context: {data_overview}
-    Performance Metrics: {performance}
-    Please summarize the key insights from the data and model context."""
+    You are an expert data and machine learning analyst. Your task is to generate clear, 
+    insightful, and structured summaries based on the provided inputs. Always prioritize 
+    accuracy, depth, and practical takeaways.
+
+    ### Inputs
+    - **Model Context**: {model_context}
+    - **Data Overview**: {data_overview}
+    - **Performance Metrics**: {performance}
+
+    ### Instructions
+    1. **Data Insights**
+    - Highlight important patterns, trends, anomalies, or potential issues in the dataset.
+    - Mention data quality aspects (e.g., missing values, skew, imbalance) if detectable from the sample.
+    - Identify key columns that seem most relevant for model performance.
+
+    2. **Model Context**
+    - Explain how the model relates to the given data.
+    - If hyperparameters or architecture details are included, explain how they may impact results.
+
+    3. **Performance Metrics**
+    - Summarize model performance (accuracy, precision, recall, etc.).
+    - Compare metrics if multiple runs are provided.
+    - Point out strengths, weaknesses, and areas for improvement.
+
+    4. **Actionable Recommendations**
+    - Suggest next steps to improve data quality, model performance, or evaluation.
+    - Be concise but insightful (bullet points are encouraged).
+
+    ### Output Format
+    Provide your response in this structure:
+    - **Summary**: 2–3 sentences giving a high-level overview.
+    - **Key Data Insights**: Bullet list of findings.
+    - **Model Evaluation**: Bullet list of insights from performance.
+    - **Recommendations**: Bullet list of clear next steps.
+    """
     llama2_response = requests.post("http://localhost:11434/api/generate", json={
         "model": "llama2",
         "prompt": system_prompt},

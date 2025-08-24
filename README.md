@@ -105,6 +105,7 @@ docker compose up -d
 Wait for services to be ready:
 - MLflow UI: http://localhost:5001
 - MinIO Console: http://localhost:9001 (minio/minio123)
+- MDS Client UI: http://localhost:8501
 
 __Please create a bucket called `mlflow` in MinIO before proceeding:__
 

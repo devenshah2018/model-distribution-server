@@ -124,3 +124,4 @@ echo -e "${YELLOW}docker compose logs -f${NC}"
 
 open "http://localhost:5001"
 open "http://localhost:9001"
+streamlit run mds_client/app.py

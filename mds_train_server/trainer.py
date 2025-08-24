@@ -23,24 +23,10 @@ from sklearn.metrics import (
 )
 from .onnx_converter import convert_to_onnx
 from .mlflow_utils import log_model_to_mlflow
-
-MODEL_REGISTRY = {
-    'rfr': {
-        'constructor': lambda: RandomForestRegressor(n_estimators=50),
-        'type': 'rf_regressor',
-        'category': 'regression'
-    },
-    'svm': {
-        'constructor': lambda: SVR(),
-        'type': 'svm_regressor',
-        'category': 'regression'
-    },
-    'rfc': {
-        'constructor': lambda: RandomForestClassifier(n_estimators=50),
-        'type': 'rf_classifier',
-        'category': 'classification'
-    }
-}
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from registry import MODEL_REGISTRY
 
 def train_models(df: pd.DataFrame, model_name: str = 'rfr'):
     model_info = MODEL_REGISTRY.get(model_name, MODEL_REGISTRY[model_name])

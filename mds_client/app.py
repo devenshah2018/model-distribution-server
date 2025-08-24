@@ -23,6 +23,12 @@ Welcome to the MDS Enterprise Model Portal. Effortlessly upload your data, selec
 """)
 
 with st.sidebar:
+    if st.button("Purge", key="purge"):
+        try:
+            resp = requests.post("http://localhost:8001/purge")
+            st.toast(f"Purged training data and models.")
+        except Exception as e:
+            st.toast(f"Purge failed: {e}")
     st.header("Step 1: Data Selection")
     st.write("Choose a sample dataset or upload your own CSV file. Your data is kept secure and private.")
     sample_files = {
@@ -32,6 +38,8 @@ with st.sidebar:
     sample_choice = st.selectbox("Select a sample or upload your own:", ["Upload your own CSV"] + list(sample_files.keys()), help="Choose a sample to explore or upload your own data for custom predictions.")
     uploaded_file = None
     csv_data = None
+    # Add endpoint call button
+    
     if sample_choice == "Upload your own CSV":
         uploaded_file = st.file_uploader("Upload CSV File", type=["csv"], help="Accepted format: .csv. Ensure your file is properly formatted.")
         if uploaded_file:

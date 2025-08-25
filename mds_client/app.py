@@ -24,22 +24,6 @@ if page == 'client':
     3. Select a model, train, and run predictions.
     4. View results and a professional summary.
     """)
-    st.subheader("Step 1: Data Selection")
-    st.write("Choose a sample dataset or upload your own CSV file. Your data is kept secure and private.")
-    sample_files = {
-        "Time Series Weather": "sample_data/time_series_weather.csv",
-        "Classification Data": "sample_data/classification_data.csv"
-    }
-    sample_choice = st.selectbox("Select a sample or upload your own:", ["Upload your own CSV"] + list(sample_files.keys()), help="Choose a sample to explore or upload your own data for custom predictions.")
-    uploaded_file = None
-    csv_data = None
-    if sample_choice == "Upload your own CSV":
-        uploaded_file = st.file_uploader("Upload CSV File", type=["csv"], help="Accepted format: .csv. Ensure your file is properly formatted.")
-        if uploaded_file:
-            csv_data = uploaded_file.read().decode("utf-8")
-    else:
-        with open(sample_files[sample_choice], "r") as f:
-            csv_data = f.read()
     with st.sidebar:
         if st.button("Portal", key="back_to_client"):
             st.session_state['page'] = 'client'
@@ -47,6 +31,22 @@ if page == 'client':
         if st.button("Registry", key="view_source_control"):
             st.session_state['page'] = 'source_control'
             st.rerun()
+        st.header("Step 1: Data Selection")
+        st.write("Choose a sample dataset or upload your own CSV file. Your data is kept secure and private.")
+        sample_files = {
+            "Time Series Weather": "sample_data/time_series_weather.csv",
+            "Classification Data": "sample_data/classification_data.csv"
+        }
+        sample_choice = st.selectbox("Select a sample or upload your own:", ["Upload your own CSV"] + list(sample_files.keys()), help="Choose a sample to explore or upload your own data for custom predictions.")
+        uploaded_file = None
+        csv_data = None
+        if sample_choice == "Upload your own CSV":
+            uploaded_file = st.file_uploader("Upload CSV File", type=["csv"], help="Accepted format: .csv. Ensure your file is properly formatted.")
+            if uploaded_file:
+                csv_data = uploaded_file.read().decode("utf-8")
+        else:
+            with open(sample_files[sample_choice], "r") as f:
+                csv_data = f.read()
 
     if csv_data:
         df = pd.read_csv(StringIO(csv_data))
@@ -168,18 +168,17 @@ elif page == 'source_control':
     models = models_json.get("models", [])
     model_names = [m.get("name", "") for m in models]
     with st.sidebar:
+        if st.button("Back to Client Portal", key="back_to_client_sc"):
+            st.session_state['page'] = 'client'
+            st.rerun()
+        selected_model = st.selectbox("Select a model to view details:", model_names, key="sc_model_select")
         if st.button("Purge", key="purge_sc"):
             try:
                 resp = requests.post("http://localhost:8001/purge")
                 st.toast(f"Purged training data and models.")
             except Exception as e:
                 st.toast(f"Purge failed: {e}")
-        if st.button("Back to Client Portal", key="back_to_client_sc"):
-            st.session_state['page'] = 'client'
-            st.rerun()
-        selected_model = st.selectbox("Select a model to view details:", model_names, key="sc_model_select")
     if selected_model:
-        st.subheader(f"Model: {selected_model}")
         model_detail_resp = requests.get(f"http://localhost:8001/models/{selected_model}")
         model_detail_json = model_detail_resp.json()
         versions = model_detail_json.get("versions", [])
@@ -189,13 +188,44 @@ elif page == 'source_control':
             run_id = v.get("run_id", "")
             st.markdown(f"**Version {v_num}**  ")
             st.caption(f"Run ID: {run_id}")
-            st.markdown(f"[View Artifacts in Minio](http://localhost:9001/browser/mlflow/models/{selected_model}/{v_num}/artifacts)")
+            st.markdown(f"[View Artifacts in Minio](http://localhost:9001/browser/mlflow/models%2F)")
             run_resp = requests.get(f"http://localhost:8001/runs/{run_id}")
             run_json = run_resp.json()
             metrics = run_json.get("metrics", {})
             if metrics:
                 st.markdown("**Performance Metrics:**")
-                st.dataframe(pd.DataFrame(metrics.items(), columns=["Metric", "Value"]))
+                def metric_quality(metric, value):
+                    if metric in ["r2_score", "explained_variance"]:
+                        if value >= 0.8:
+                            return "Excellent"
+                        elif value >= 0.6:
+                            return "Good"
+                        elif value >= 0.4:
+                            return "Fair"
+                        else:
+                            return "Poor"
+                    if metric in ["mae", "mse", "rmse", "median_absolute_error", "max_error", "mean_squared_log_error", "mean_poisson_deviance", "mean_gamma_deviance", "mean_tweedie_deviance", "mean_absolute_percentage_error", "mean_pinball_loss"]:
+                        if value <= 1:
+                            return "Excellent"
+                        elif value <= 5:
+                            return "Good"
+                        elif value <= 10:
+                            return "Fair"
+                        else:
+                            return "Poor"
+                    if metric in ["accuracy", "f1_score", "precision", "recall"]:
+                        if value >= 0.9:
+                            return "Excellent"
+                        elif value >= 0.75:
+                            return "Good"
+                        elif value >= 0.6:
+                            return "Fair"
+                        else:
+                            return "Poor"
+                    return "N/A"
+                metrics_df = pd.DataFrame(metrics.items(), columns=["Metric", "Value"])
+                metrics_df["Quality"] = metrics_df.apply(lambda row: metric_quality(row["Metric"], row["Value"]), axis=1)
+                st.dataframe(metrics_df)
             else:
                 st.caption("No metrics available.")
             st.markdown("---")

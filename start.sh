@@ -88,15 +88,16 @@ else
     echo -e "${GREEN}✅ mlflow bucket already exists${NC}"
 fi
 
-# Step 3: Check if virtual environment exists
-if [ ! -d ".venv" ]; then
-    echo -e "${YELLOW}🐍 Virtual environment not found. Creating...${NC}"
-    python3 -m venv .venv
-    source .venv/bin/activate
-    pip install -r mds_train_server/requirements.txt
-    pip install -r mds_inference_server/requirements.txt
-    echo -e "${GREEN}✅ Virtual environment created and dependencies installed${NC}"
-fi
+# # Step 3: Check if virtual environment exists
+# if [ ! -d ".venv" ]; then
+#     echo -e "${YELLOW}🐍 Virtual environment not found. Creating...${NC}"
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r mds_train_server/requirements.txt
+pip install -r mds_inference_server/requirements.txt
+pip install -r mds_client/requirements.txt
+echo -e "${GREEN}✅ Virtual environment created and dependencies installed${NC}"
+# fi
 
 # Step 4: Start application servers in new terminals
 echo -e "${BLUE}🖥️  Starting application servers...${NC}"
@@ -114,6 +115,7 @@ echo -e "${GREEN}📊 MLflow UI:      http://localhost:5001${NC}"
 echo -e "${GREEN}🗄️  MinIO Console:  http://localhost:9001 (minio/minio123)${NC}"
 echo -e "${GREEN}🔧 Training API:   http://localhost:8001${NC}"
 echo -e "${GREEN}🔮 Inference API:  http://localhost:8002${NC}"
+echo -e "${GREEN}😎 MDS Client:    http://localhost:8501${NC}"
 echo -e "${GREEN}═══════════════════════════════════════${NC}"
 
 echo -e "${BLUE}💡 Test training with:${NC}"
